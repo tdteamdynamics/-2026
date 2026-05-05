@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>תרגול אנגלית — כיתה ד׳</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #FF6B9D;
+    --purple: #9B5DE5;
+    --yellow: #FEE440;
+    --mint: #00BBF9;
+    --green: #00F5D4;
+    --bg: #FFF9FC;
+    --card: #ffffff;
+    --text: #2D2640;
+    --muted: #8B7EA8;
+    --correct: #06D6A0;
+    --wrong: #EF476F;
+    --shadow: 0 4px 20px rgba(155,93,229,0.13);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: -100px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(155,93,229,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -80px; left: -80px;
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(0,187,249,0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* SCREENS */
+  .screen { display: none; min-height: 100vh; padding: 2rem 1rem; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+  /* WELCOME */
+  #welcome { text-align: center; gap: 1.5rem; }
+  .star-emoji { font-size: 60px; animation: bounce 2s infinite; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  .title-main {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 8vw, 3.2rem);
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.1;
+  }
+  .subtitle { font-size: 1.1rem; color: var(--muted); font-weight: 600; margin-top: 0.5rem; }
+  .name-box {
+    width: min(380px, 90vw);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--card);
+    padding: 1.5rem;
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    border: 2px solid rgba(155,93,229,0.1);
+  }
+  .name-box label { font-size: 0.95rem; font-weight: 700; color: var(--purple); }
+  .name-box input {
+    padding: 12px 16px;
+    border: 2px solid rgba(155,93,229,0.25);
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    color: var(--text);
+    outline: none;
+    text-align: right;
+    transition: border-color 0.2s;
+  }
+  .name-box input:focus { border-color: var(--purple); }
+  .btn-start {
+    padding: 14px;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.15rem;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 15px rgba(155,93,229,0.4);
+  }
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(155,93,229,0.4); }
+  .btn-start:active { transform: scale(0.97); }
+
+  /* QUIZ */
+  #quiz { justify-content: flex-start; padding-top: 1.5rem; gap: 1rem; }
+  .quiz-header {
+    width: min(520px, 95vw);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .student-chip {
+    background: rgba(155,93,229,0.1);
+    color: var(--purple);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .progress-label { font-size: 0.9rem; color: var(--muted); font-weight: 600; }
+  .progress-track {
+    width: min(520px, 95vw);
+    height: 10px;
+    background: rgba(155,93,229,0.12);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--purple), var(--pink));
+    border-radius: 10px;
+    transition: width 0.4s ease;
+  }
+  .q-card {
+    width: min(520px, 95vw);
+    background: var(--card);
+    border-radius: 24px;
+    padding: 2rem 1.5rem;
+    box-shadow: var(--shadow);
+    border: 2px solid rgba(155,93,229,0.08);
+  }
+  .q-num {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+  .q-word {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 7vw, 2.8rem);
+    color: var(--purple);
+    margin-bottom: 0.25rem;
+    direction: ltr;
+    text-align: center;
+  }
+  .q-type-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  /* MCQ */
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .opt {
+    padding: 14px 12px;
+    border: 2px solid rgba(155,93,229,0.2);
+    border-radius: 14px;
+    background: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    direction: rtl;
+  }
+  .opt:hover:not(:disabled) { border-color: var(--purple); background: rgba(155,93,229,0.06); transform: translateY(-1px); }
+  .opt.correct { border-color: var(--correct); background: rgba(6,214,160,0.1); color: #027A5B; }
+  .opt.wrong { border-color: var(--wrong); background: rgba(239,71,111,0.1); color: #C0133A; }
+  .opt:disabled { cursor: default; }
+
+  /* TYPING */
+  .type-area { display: flex; flex-direction: column; gap: 12px; }
+  .type-input {
+    padding: 14px 16px;
+    border: 2px solid rgba(155,93,229,0.25);
+    border-radius: 14px;
+    font-size: 1.2rem;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    color: var(--text);
+    outline: none;
+    text-align: right;
+    transition: border-color 0.2s;
+    direction: rtl;
+  }
+  .type-input:focus { border-color: var(--purple); }
+  .type-input.correct { border-color: var(--correct); background: rgba(6,214,160,0.08); }
+  .type-input.wrong { border-color: var(--wrong); background: rgba(239,71,111,0.08); }
+  .correct-hint { font-size: 0.9rem; color: var(--correct); font-weight: 700; text-align: center; margin-top: 4px; }
+  .btn-check {
+    padding: 13px;
+    background: linear-gradient(135deg, var(--purple), var(--mint));
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .btn-check:hover { transform: translateY(-1px); }
+  .btn-next {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 15px rgba(255,107,157,0.35);
+  }
+  .btn-next:hover { transform: translateY(-2px); }
+
+  /* DONE */
+  #done { text-align: center; gap: 1.5rem; }
+  .trophy { font-size: 80px; animation: bounce 1.5s infinite; }
+  .score-circle {
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    color: white;
+    box-shadow: 0 8px 30px rgba(155,93,229,0.4);
+    margin: 0 auto;
+  }
+  .score-num { font-family: 'Fredoka One', cursive; font-size: 2.8rem; line-height: 1; }
+  .score-lbl { font-size: 0.85rem; font-weight: 700; opacity: 0.85; }
+  .grade-badge {
+    display: inline-block;
+    padding: 10px 28px;
+    border-radius: 30px;
+    font-size: 1.3rem;
+    font-weight: 800;
+  }
+  .done-summary {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    width: min(400px, 90vw);
+    border: 2px solid rgba(155,93,229,0.08);
+  }
+  .done-summary h3 { font-size: 1rem; color: var(--muted); margin-bottom: 1rem; }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(155,93,229,0.08);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .tag-correct { color: var(--correct); }
+  .tag-wrong { color: var(--wrong); }
+  .btn-again {
+    padding: 13px 30px;
+    background: linear-gradient(135deg, var(--mint), var(--purple));
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1rem;
+    font-weight: 800;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .btn-again:hover { transform: translateY(-2px); }
+
+  /* TEACHER */
+  #teacher { justify-content: flex-start; padding-top: 1.5rem; gap: 1rem; }
+  .teacher-header {
+    width: min(600px, 95vw);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .teacher-title { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: var(--purple); }
+  .btn-clear {
+    padding: 7px 16px;
+    background: rgba(239,71,111,0.1);
+    color: var(--wrong);
+    border: 1px solid rgba(239,71,111,0.25);
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    cursor: pointer;
+  }
+  .stats-row {
+    width: min(600px, 95vw);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border: 2px solid rgba(155,93,229,0.08);
+  }
+  .stat-num { font-family: 'Fredoka One', cursive; font-size: 2rem; color: var(--purple); }
+  .stat-lbl { font-size: 0.8rem; color: var(--muted); font-weight: 600; margin-top: 2px; }
+  .results-list {
+    width: min(600px, 95vw);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .result-card {
+    background: white;
+    border-radius: 18px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 2px 12px rgba(155,93,229,0.08);
+    border: 2px solid rgba(155,93,229,0.07);
+  }
+  .rc-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .rc-name { font-weight: 800; font-size: 1rem; }
+  .rc-score-badge {
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.9rem;
+  }
+  .rc-meta { font-size: 0.8rem; color: var(--muted); }
+  .rc-bar-track { height: 6px; background: rgba(155,93,229,0.1); border-radius: 6px; margin-top: 8px; overflow: hidden; }
+  .rc-bar-fill { height: 100%; border-radius: 6px; }
+  .rc-expand { margin-top: 10px; display: none; }
+  .rc-expand.open { display: block; }
+  .rc-toggle { background: none; border: none; color: var(--purple); font-size: 0.82rem; font-weight: 700; font-family: 'Nunito', sans-serif; cursor: pointer; padding: 4px 0; }
+  .wrong-list { margin-top: 6px; font-size: 0.85rem; color: var(--muted); line-height: 1.8; }
+  .wrong-word { color: var(--wrong); font-weight: 700; }
+  .empty-teacher { text-align: center; color: var(--muted); padding: 3rem; font-size: 1rem; font-weight: 600; }
+
+  /* NAV pill for teacher */
+  .teacher-nav {
+    position: fixed; bottom: 1.2rem; left: 50%; transform: translateX(-50%);
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    padding: 6px;
+    display: flex;
+    gap: 4px;
+    z-index: 100;
+  }
+  .tnav-btn {
+    padding: 8px 18px;
+    border: none;
+    border-radius: 24px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .tnav-btn.active { background: linear-gradient(135deg, var(--purple), var(--pink)); color: white; }
+
+  @media (max-width: 420px) {
+    .options-grid { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- WELCOME -->
+<div class="screen active" id="welcome">
+  <div class="star-emoji">⭐</div>
+  <div>
+    <div class="title-main">תרגול אנגלית</div>
+    <div class="subtitle">כיתה ד׳ · מילים וצבעים ומספרים</div>
+  </div>
+  <div class="name-box">
+    <label>מה השם שלך?</label>
+    <input id="name-input" type="text" placeholder="כתבי את שמך כאן..." onkeydown="if(event.key==='Enter') tryStart()" />
+    <button class="btn-start" onclick="tryStart()">בואי נתרגל! 🚀</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="screen" id="quiz">
+  <div class="quiz-header">
+    <div class="student-chip" id="quiz-name"></div>
+    <div class="progress-label" id="prog-lbl">1 / 20</div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:5%"></div></div>
+  <div class="q-card">
+    <div class="q-num" id="q-num"></div>
+    <div class="q-word" id="q-word"></div>
+    <div class="q-type-label" id="q-type-lbl"></div>
+    <div id="q-body"></div>
+    <button class="btn-next" id="btn-next" style="display:none" onclick="nextQ()">הבאה ←</button>
+  </div>
+</div>
+
+<!-- DONE -->
+<div class="screen" id="done">
+  <div class="trophy" id="trophy-emoji">🏆</div>
+  <div class="score-circle">
+    <div class="score-num" id="final-pct"></div>
+    <div class="score-lbl">ציון</div>
+  </div>
+  <div class="grade-badge" id="grade-badge"></div>
+  <div class="done-summary">
+    <h3>פירוט:</h3>
+    <div class="summary-row"><span>שם</span><span id="sum-name"></span></div>
+    <div class="summary-row"><span>נכון</span><span class="tag-correct" id="sum-correct"></span></div>
+    <div class="summary-row"><span>טעות</span><span class="tag-wrong" id="sum-wrong"></span></div>
+    <div class="summary-row"><span>מתוך</span><span id="sum-total"></span></div>
+  </div>
+  <button class="btn-again" onclick="location.reload()">תרגול נוסף 🔄</button>
+</div>
+
+<!-- TEACHER -->
+<div class="screen" id="teacher">
+  <div class="teacher-header">
+    <div class="teacher-title">👩‍🏫 תוצאות</div>
+    <button class="btn-clear" onclick="clearAll()">מחק הכל</button>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="t-count">0</div><div class="stat-lbl">תלמידים</div></div>
+    <div class="stat-card"><div class="stat-num" id="t-avg">—</div><div class="stat-lbl">ממוצע</div></div>
+    <div class="stat-card"><div class="stat-num" id="t-pass">0</div><div class="stat-lbl">עברו ≥60</div></div>
+  </div>
+  <div class="results-list" id="results-list"></div>
+</div>
+
+<!-- NAV (visible always) -->
+<nav class="teacher-nav" id="bottom-nav">
+  <button class="tnav-btn active" onclick="gotoStudent()">📚 תרגול</button>
+  <button class="tnav-btn" onclick="gotoTeacher()">📊 מורה</button>
+</nav>
+
+<script>
+const WORDS = [
+  ["one","אחד/אחת"],["two","שניים/שתיים"],["three","שלוש/שלושה"],["four","ארבע/ארבעה"],
+  ["five","חמש/חמישה"],["six","שש/ששה"],["seven","שבע/שבעה"],["eight","שמונה"],
+  ["nine","תשע/תשעה"],["ten","עשר/עשרה"],["eleven","אחד עשר"],["twelve","שנים עשר"],
+  ["thirteen","שלושה עשר"],["fourteen","ארבעה עשר"],["fifteen","חמישה עשר"],
+  ["sixteen","שישה עשר"],["seventeen","שבעה עשר"],["eighteen","שמונה עשר"],
+  ["nineteen","תשעה עשר"],["twenty","עשרים"],["thirty","שלושים"],["forty","ארבעים"],
+  ["fifty","חמישים"],["sixty","שישים"],["seventy","שבעים"],["eighty","שמונים"],
+  ["ninety","תשעים"],["one hundred","מאה"],
+  ["shoes","נעליים"],["shirt","חולצה"],["shorts","מכנסיים קצרים"],["sandals","סנדלים"],
+  ["gloves","כפפות"],["socks","גרביים"],["skirt","חצאית"],["sweater","סוודר"],
+  ["jacket","ז׳קט"],["pants","מכנסיים"],["boots","מגפיים"],["dress","שמלה"],
+  ["hat","כובע"],["coat","מעיל"],["clothes","בגדים"],["closet","ארון בגדים"],
+  ["to wear","ללבוש"],["take off","להסיר"],["put on","לשים"],["shopping","קניות"],
+  ["red","אדום"],["orange","כתום"],["yellow","צהוב"],["green","ירוק"],
+  ["blue","כחול"],["purple","סגול"],["pink","ורוד"],["brown","חום"],
+  ["black","שחור"],["white","לבן"],["gray","אפור"]
+];
+
+const TOTAL_Q = 20;
+let studentName = '';
+let questions = [];
+let currentIdx = 0;
+let results = [];
+let sessionResults = null;
+
+function loadResults() {
+  try { results = JSON.parse(localStorage.getItem('quiz_results_v2') || '[]'); } catch(e){ results=[]; }
+}
+function saveResults() {
+  try { localStorage.setItem('quiz_results_v2', JSON.stringify(results)); } catch(e){}
+}
+
+function shuffle(arr) { return [...arr].sort(()=>Math.random()-0.5); }
+
+function tryStart() {
+  const v = document.getElementById('name-input').value.trim();
+  if (!v) { document.getElementById('name-input').focus(); return; }
+  studentName = v;
+  buildQuiz();
+}
+
+function buildQuiz() {
+  const pool = shuffle(WORDS).slice(0, TOTAL_Q);
+  questions = pool.map(([eng, heb], i) => {
+    const isMCQ = i < 14;
+    let opts = null;
+    if (isMCQ) {
+      const wrong = shuffle(WORDS.filter(w => w[1] !== heb)).slice(0,3).map(w=>w[1]);
+      opts = shuffle([heb, ...wrong]);
+    }
+    return { eng, heb, opts, type: isMCQ ? 'mcq' : 'type', answered: null, correct: null };
+  });
+  currentIdx = 0;
+  sessionResults = { name: studentName, score: 0, correct: 0, wrong: 0, total: TOTAL_Q, time: new Date().toLocaleString('he-IL'), detail: [] };
+  showScreen('quiz');
+  document.getElementById('quiz-name').textContent = '👋 ' + studentName;
+  renderQ();
+}
+
+function renderQ() {
+  const q = questions[currentIdx];
+  const pct = Math.round((currentIdx / TOTAL_Q) * 100);
+  document.getElementById('prog-fill').style.width = Math.max(5, pct) + '%';
+  document.getElementById('prog-lbl').textContent = (currentIdx+1) + ' / ' + TOTAL_Q;
+  document.getElementById('q-num').textContent = 'שאלה ' + (currentIdx+1);
+  document.getElementById('q-word').textContent = q.eng;
+  document.getElementById('q-type-lbl').textContent = q.type === 'mcq' ? 'בחרי את התרגום הנכון' : 'כתבי את התרגום בעברית';
+  document.getElementById('btn-next').style.display = 'none';
+
+  const body = document.getElementById('q-body');
+  if (q.type === 'mcq') {
+    body.innerHTML = `<div class="options-grid">${q.opts.map(opt=>`<button class="opt" onclick="answerMCQ('${opt.replace(/'/g,"\\'")}', this)">${opt}</button>`).join('')}</div>`;
+  } else {
+    body.innerHTML = `
+      <div class="type-area">
+        <input class="type-input" id="type-ans" type="text" placeholder="כתבי כאן..." dir="rtl"
+          onkeydown="if(event.key==='Enter') checkType()" />
+        <button class="btn-check" onclick="checkType()">בדקי ✓</button>
+        <div class="correct-hint" id="type-hint" style="display:none"></div>
+      </div>`;
+    setTimeout(()=>{ const el=document.getElementById('type-ans'); if(el) el.focus(); }, 50);
+  }
+}
+
+function answerMCQ(opt, btn) {
+  const q = questions[currentIdx];
+  if (q.answered !== null) return;
+  q.answered = opt;
+  const isCorrect = normalize(opt) === normalize(q.heb);
+  q.correct = isCorrect;
+  document.querySelectorAll('.opt').forEach(b => {
+    b.disabled = true;
+    if (normalize(b.textContent) === normalize(q.heb)) b.classList.add('correct');
+    else if (b === btn && !isCorrect) b.classList.add('wrong');
+  });
+  recordAnswer(q);
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function checkType() {
+  const q = questions[currentIdx];
+  if (q.answered !== null) { nextQ(); return; }
+  const inp = document.getElementById('type-ans');
+  const val = inp.value.trim();
+  if (!val) { inp.focus(); return; }
+  q.answered = val;
+  const isCorrect = normalize(val) === normalize(q.heb);
+  q.correct = isCorrect;
+  inp.classList.add(isCorrect ? 'correct' : 'wrong');
+  inp.disabled = true;
+  const hint = document.getElementById('type-hint');
+  if (!isCorrect) { hint.textContent = '✓ התשובה הנכונה: ' + q.heb; hint.style.display='block'; }
+  else { hint.textContent = '✓ כל הכבוד!'; hint.style.color='var(--correct)'; hint.style.display='block'; }
+  document.querySelector('.btn-check').style.display = 'none';
+  recordAnswer(q);
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function normalize(s) {
+  return s.trim().toLowerCase().replace(/[/\-–—]/g,'').replace(/\s+/g,' ');
+}
+
+function recordAnswer(q) {
+  sessionResults.detail.push({ eng: q.eng, heb: q.heb, ans: q.answered, ok: q.correct });
+  if (q.correct) sessionResults.correct++; else sessionResults.wrong++;
+}
+
+function nextQ() {
+  currentIdx++;
+  if (currentIdx >= TOTAL_Q) { finishQuiz(); return; }
+  renderQ();
+}
+
+function finishQuiz() {
+  sessionResults.score = Math.round(sessionResults.correct / TOTAL_Q * 100);
+  results.push(sessionResults);
+  saveResults();
+  showDone();
+}
+
+function showDone() {
+  const r = sessionResults;
+  document.getElementById('final-pct').textContent = r.score + '%';
+  document.getElementById('sum-name').textContent = r.name;
+  document.getElementById('sum-correct').textContent = r.correct + ' ✓';
+  document.getElementById('sum-wrong').textContent = r.wrong + ' ✗';
+  document.getElementById('sum-total').textContent = r.total;
+  const grade = r.score>=90?'מצוין! 🌟':r.score>=80?'טוב מאוד 🎉':r.score>=70?'טוב 👍':r.score>=60?'מספיק 😊':'כדאי לחזור 💪';
+  const col = r.score>=80?'#06D6A0':r.score>=60?'#FFB703':'#EF476F';
+  const badge = document.getElementById('grade-badge');
+  badge.textContent = grade;
+  badge.style.background = col + '22';
+  badge.style.color = col;
+  document.getElementById('trophy-emoji').textContent = r.score>=80?'🏆':r.score>=60?'🥈':'💪';
+  showScreen('done');
+}
+
+function gotoStudent() {
+  setNavActive(0);
+  showScreen('welcome');
+}
+
+function gotoTeacher() {
+  setNavActive(1);
+  loadResults();
+  renderTeacher();
+  showScreen('teacher');
+}
+
+function setNavActive(i) {
+  document.querySelectorAll('.tnav-btn').forEach((b,idx)=>b.classList.toggle('active', idx===i));
+}
+
+function renderTeacher() {
+  loadResults();
+  const count = results.length;
+  const avg = count ? Math.round(results.reduce((s,r)=>s+r.score,0)/count) : 0;
+  const pass = results.filter(r=>r.score>=60).length;
+  document.getElementById('t-count').textContent = count;
+  document.getElementById('t-avg').textContent = count ? avg+'%' : '—';
+  document.getElementById('t-pass').textContent = pass;
+
+  const list = document.getElementById('results-list');
+  if (!count) { list.innerHTML='<div class="empty-teacher">עדיין אין תוצאות.<br>שלחי את הקישור לתלמידות!</div>'; return; }
+
+  list.innerHTML = [...results].reverse().map((r,i)=>{
+    const ri = results.length - 1 - i;
+    const col = r.score>=80?'#06D6A0':r.score>=60?'#FFB703':'#EF476F';
+    const grade = r.score>=90?'מצוין':r.score>=80?'טוב מאוד':r.score>=70?'טוב':r.score>=60?'מספיק':'לא עבר';
+    const wrongs = r.detail.filter(d=>!d.ok).map(d=>`<span class="wrong-word">${d.eng}</span> (${d.heb})`).join(', ');
+    return `<div class="result-card">
+      <div class="rc-top">
+        <div class="rc-name">${r.name}</div>
+        <div class="rc-score-badge" style="background:${col}22;color:${col}">${r.score}% — ${grade}</div>
+      </div>
+      <div class="rc-meta">${r.correct}/${r.total} נכון · ${r.time}</div>
+      <div class="rc-bar-track"><div class="rc-bar-fill" style="width:${r.score}%;background:${col}"></div></div>
+      ${wrongs ? `<button class="rc-toggle" onclick="toggleDetail(this)">הצג טעויות ▾</button>
+      <div class="rc-expand"><div class="wrong-list">${wrongs}</div></div>` : '<div style="font-size:0.82rem;color:var(--correct);margin-top:6px;font-weight:700">✓ ללא טעויות!</div>'}
+    </div>`;
+  }).join('');
+}
+
+function toggleDetail(btn) {
+  const exp = btn.nextElementSibling;
+  const open = exp.classList.toggle('open');
+  btn.textContent = open ? 'הסתר ▲' : 'הצג טעויות ▾';
+}
+
+function clearAll() {
+  if (!confirm('למחוק את כל התוצאות?')) return;
+  results = [];
+  saveResults();
+  renderTeacher();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+loadResults();
+</script>
+</body>
+</html>
